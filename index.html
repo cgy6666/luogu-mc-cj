@@ -14,6 +14,10 @@
             --primary-color: #0969da;
             --success-color: #1a7f37;
             --success-bg: #dafbe1;
+            --warning-color: #9a6700;
+            --warning-bg: #fff8c5;
+            --error-color: #cf222e;
+            --error-bg: #ffebe9;
         }
         @media (prefers-color-scheme: dark) {
             :root {
@@ -25,6 +29,10 @@
                 --primary-color: #58a6ff;
                 --success-color: #3fb950;
                 --success-bg: #238636;
+                --warning-color: #d29922;
+                --warning-bg: #9e6a03;
+                --error-color: #f85149;
+                --error-bg: #da3633;
             }
         }
         body {
@@ -34,21 +42,32 @@
             color: var(--text-color);
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
         }
         .container {
             width: 100%;
-            max-width: 800px;
-            padding: 20px;
+            max-width: 860px;
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
         }
-        h1 { margin-top: 0; font-size: 24px; text-align: center; }
-        p.subtitle { text-align: center; color: var(--text-light); margin-bottom: 24px; font-size: 14px; }
-        .btn-group { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; }
+        .header {
+            padding: 24px 24px 0;
+            text-align: center;
+        }
+        .header h1 { margin: 0 0 8px; font-size: 24px; }
+        .header p { margin: 0 0 20px; color: var(--text-light); font-size: 14px; }
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            padding: 0 24px 20px;
+        }
         button {
             padding: 10px 20px;
             border: none;
@@ -56,79 +75,135 @@
             font-size: 14px;
             cursor: pointer;
             transition: 0.2s;
-            font-weight: bold;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
         button.primary { background: var(--primary-color); color: #fff; }
-        button.primary:hover { opacity: 0.9; }
+        button.primary:hover:not(:disabled) { opacity: 0.9; }
+        button.secondary { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-color); }
+        button.secondary:hover:not(:disabled) { border-color: var(--primary-color); }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 14px; }
-        th { color: var(--text-light); font-weight: 600; }
-        tr.fastest { background: var(--success-bg); }
-        tr.fastest td { color: var(--success-color); font-weight: bold; }
-        .time { font-family: monospace; font-size: 15px; }
-        .status { font-size: 12px; padding: 2px 8px; border-radius: 12px; background: var(--border-color); }
+        button.small { padding: 6px 12px; font-size: 13px; font-weight: normal; }
+        .table-wrap { overflow-x: auto; padding: 0 24px 24px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        th { color: var(--text-light); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+        tr:last-child td { border-bottom: none; }
+        .time { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .badge.success { background: var(--success-bg); color: var(--success-color); }
+        .badge.warning { background: var(--warning-bg); color: var(--warning-color); }
+        .badge.error { background: var(--error-bg); color: var(--error-color); }
+        .badge.neutral { background: var(--border-color); color: var(--text-light); }
+        .version-badge { background: var(--primary-color); color: #fff; padding: 1px 6px; border-radius: 4px; font-size: 11px; margin-left: 6px; }
+        .guide { padding: 24px; border-top: 1px solid var(--border-color); background: var(--bg-color); }
+        .guide h3 { margin: 0 0 12px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+        .guide ol { margin: 0; padding-left: 20px; color: var(--text-light); font-size: 14px; line-height: 1.8; }
+        .guide code { background: var(--border-color); padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 13px; }
+        .tip { margin-top: 12px; font-size: 13px; color: var(--text-light); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>洛谷 MC 成就</h1>
-    <p class="subtitle">自动测速，为你优选最快的 CDN 节点安装脚本</p>
-    
-    <div class="btn-group">
-        <button id="testBtn" class="primary" onclick="startTest()">开始测速</button>
-        <button id="installBtn" class="primary" onclick="installFastest()" disabled>安装最快源</button>
+    <div class="header">
+        <h1>洛谷 MC 成就 - 极速安装</h1>
+        <p>自动测速并检查版本，为你选择最优的 CDN 节点</p>
     </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>CDN 节点</th>
-                <th>响应时间</th>
-                <th>状态</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody id="resultBody">
-            <tr><td colspan="4" style="text-align:center;color:var(--text-light)">点击上方按钮开始测速</td></tr>
-        </tbody>
-    </table>
+    <div class="actions">
+        <button id="testBtn" class="primary" onclick="startTest()">🚀 开始测速</button>
+        <button id="installBtn" class="secondary" onclick="installFastest()" disabled>⚡ 安装最快源</button>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>CDN 节点</th>
+                    <th>版本</th>
+                    <th>响应时间</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="resultBody">
+                <tr><td colspan="5" style="text-align:center;color:var(--text-light);padding:30px;">点击上方按钮开始测速</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="guide">
+        <h3>📖 安装说明</h3>
+        <ol>
+            <li>确保你的浏览器已安装 <strong>Tampermonkey</strong>（篡改猴）或 <strong>Violentmonkey</strong> 扩展。</li>
+            <li>点击“开始测速”，系统会自动检测各 CDN 的可用性和版本。</li>
+            <li>点击“安装最快源”一键跳转安装，或选择任意可用节点手动安装。</li>
+            <li>安装完成后，在油猴面板中启用脚本，刷新洛谷页面即可生效。</li>
+        </ol>
+        <p class="tip">💡 如果点击安装没有反应，请检查浏览器是否拦截了弹窗，或右键复制链接，在油猴中“新建脚本”手动粘贴。</p>
+    </div>
 </div>
 
 <script>
     // ================= 配置区 =================
-    // 在这里填入你的 GitHub 用户名、仓库名、分支和文件名
     const REPO = 'cgy6666/luogu-mc-cj'; 
     const BRANCH = 'main';
     const FILENAME = 'luogu-mc-cj.user.js';
+    // 官方备用源（注意：这里只写前缀，系统会自动拼接 /文件名）
+    const CUSTOM_SOURCES = [
+        { name: '官方备用', base: 'https://luogumc.xqyhcc.qzz.io' }
+    ];
     // ==========================================
 
-    // 定义测速的 CDN 源
     const CDN_SOURCES = [
         { name: 'jsDelivr (Fastly)', base: `https://fastly.jsdelivr.net/gh/${REPO}@${BRANCH}` },
         { name: 'jsDelivr (GCore)', base: `https://gcore.jsdelivr.net/gh/${REPO}@${BRANCH}` },
         { name: 'jsDelivr (主)', base: `https://cdn.jsdelivr.net/gh/${REPO}@${BRANCH}` },
         { name: 'jsdmirror.cn', base: `https://cdn.jsdmirror.cn/gh/${REPO}@${BRANCH}` },
         { name: 'GitHub Raw', base: `https://raw.githubusercontent.com/${REPO}/${BRANCH}` },
-        { name: '官方备用', base: `https://luogumc.xqyhcc.qzz.io` } 
+        ...CUSTOM_SOURCES
     ];
 
     let results = [];
     let fastestUrl = '';
 
-    // 测速核心逻辑
+    // 带超时的测速请求
     async function testNode(source) {
         const url = `${source.base}/${FILENAME}`;
         const start = performance.now();
-        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8秒超时
+
         try {
-            // 加上时间戳防止 CDN 缓存导致测速不准
-            const res = await fetch(`${url}?t=${Date.now()}`, { method: 'HEAD', cache: 'no-cache' });
+            const res = await fetch(`${url}?t=${Date.now()}`, { 
+                method: 'HEAD', 
+                cache: 'no-cache',
+                signal: controller.signal 
+            });
+            clearTimeout(timeoutId);
             const duration = Math.round(performance.now() - start);
-            return { ...source, url, duration, ok: res.ok };
+            
+            // 尝试从响应头或文本中提取版本号（HEAD 请求可能拿不到，这里做个降级）
+            let version = null;
+            if (res.ok) {
+                try {
+                    const textRes = await fetch(`${url}?t=${Date.now()}`, { cache: 'no-cache', signal: AbortSignal.timeout(3000) });
+                    const text = await textRes.text();
+                    const match = text.match(/@version\s+([\d\.]+)/);
+                    if (match) version = match[1];
+                } catch (e) { /* 版本获取失败不影响测速 */ }
+            }
+            
+            return { ...source, url, duration, ok: res.ok, version };
         } catch (err) {
-            return { ...source, url, duration: 9999, ok: false };
+            clearTimeout(timeoutId);
+            return { ...source, url, duration: 9999, ok: false, version: null };
         }
     }
 
@@ -138,37 +213,77 @@
         const installBtn = document.getElementById('installBtn');
 
         btn.disabled = true;
-        btn.innerText = '测速中...';
+        btn.innerText = '⏳ 测速中...';
         installBtn.disabled = true;
         results = [];
-        tbody.innerHTML = '';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-light);padding:30px;">正在并发请求各节点，请稍候...</td></tr>';
 
         // 并发测速
         const promises = CDN_SOURCES.map(src => testNode(src));
         const data = await Promise.all(promises);
 
-        // 找出最快的可用节点
-        const available = data.filter(d => d.ok).sort((a, b) => a.duration - b.duration);
-        
-        if (available.length > 0) {
-            fastestUrl = available[0].url;
+        // 找出最新版本号（取可用节点中出现频率最高的版本，或第一个成功的版本）
+        const versionCounts = {};
+        data.filter(d => d.ok && d.version).forEach(d => {
+            versionCounts[d.version] = (versionCounts[d.version] || 0) + 1;
+        });
+        let latestVersion = null;
+        let maxCount = 0;
+        for (const [ver, count] of Object.entries(versionCounts)) {
+            if (count > maxCount) { maxCount = count; latestVersion = ver; }
+        }
+        // 如果没有拿到任何版本号，就退回取第一个成功节点的版本
+        if (!latestVersion) {
+            const firstWithVersion = data.find(d => d.ok && d.version);
+            if (firstWithVersion) latestVersion = firstWithVersion.version;
+        }
+
+        // 排序：可用的在前，按速度升序
+        const sorted = [...data].sort((a, b) => {
+            if (a.ok && !b.ok) return -1;
+            if (!a.ok && b.ok) return 1;
+            return a.duration - b.duration;
+        });
+
+        const fastest = sorted.find(d => d.ok && d.version === latestVersion) || sorted.find(d => d.ok);
+        if (fastest) {
+            fastestUrl = fastest.url;
             installBtn.disabled = false;
         }
 
         // 渲染表格
-        data.forEach(item => {
+        tbody.innerHTML = '';
+        sorted.forEach(item => {
             const isFastest = fastestUrl === item.url;
+            let statusBadge, statusClass;
+
+            if (!item.ok) {
+                statusBadge = '失败'; statusClass = 'badge error';
+            } else if (item.version && latestVersion && item.version !== latestVersion) {
+                statusBadge = '版本落后'; statusClass = 'badge warning';
+            } else if (isFastest) {
+                statusBadge = '最快'; statusClass = 'badge success';
+            } else {
+                statusBadge = '就绪'; statusClass = 'badge neutral';
+            }
+
+            const versionDisplay = item.version ? `<span class="version-badge">v${item.version}</span>` : '<span style="color:var(--text-light)">—</span>';
+            const timeDisplay = item.ok ? `<span class="time">${item.duration} ms</span>` : '<span style="color:var(--text-light)">超时</span>';
+
             const tr = document.createElement('tr');
-            if (isFastest) tr.className = 'fastest';
+            if (isFastest) tr.style.background = 'var(--success-bg)';
 
             tr.innerHTML = `
-                <td>${item.name}</td>
-                <td class="time">${item.ok ? item.duration + ' ms' : '超时'}</td>
-                <td><span class="status">${item.ok ? (isFastest ? '最快' : '就绪') : '失败'}</span></td>
-                <td>
-                    <button class="primary" style="padding:4px 12px;font-size:12px" 
-                        onclick="window.open('${item.url}', '_blank')" ${item.ok ? '' : 'disabled'}>
+                <td><strong>${item.name}</strong></td>
+                <td>${versionDisplay}</td>
+                <td>${timeDisplay}</td>
+                <td><span class="${statusClass}">${statusBadge}</span></td>
+                <td style="white-space:nowrap;">
+                    <button class="primary small" onclick="window.open('${item.url}', '_blank')" ${item.ok ? '' : 'disabled'}>
                         安装
+                    </button>
+                    <button class="secondary small" onclick="copyLink('${item.url}')" ${item.ok ? '' : 'disabled'} title="复制链接">
+                        📋
                     </button>
                 </td>
             `;
@@ -176,16 +291,31 @@
         });
 
         btn.disabled = false;
-        btn.innerText = '重新测速';
+        btn.innerText = '🔄 重新测速';
     }
 
     // 一键安装最快源
     function installFastest() {
         if (fastestUrl) {
-            // 使用 Tampermonkey 官方接口强制唤起安装
             const tmUrl = `https://www.tampermonkey.net/script_installation.php?url=${encodeURIComponent(fastestUrl)}`;
             window.open(tmUrl, '_blank');
         }
+    }
+
+    // 复制链接到剪贴板
+    function copyLink(url) {
+        navigator.clipboard.writeText(url).then(() => {
+            alert('链接已复制到剪贴板！');
+        }).catch(() => {
+            // 降级方案
+            const input = document.createElement('input');
+            input.value = url;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            alert('链接已复制到剪贴板！');
+        });
     }
 </script>
 
