@@ -1,4 +1,4 @@
-Language: English | [简体中文](https://github.com/cgy6666/luogu-mc-cj/blob/main/README_zh.md)
+Language: English | [简体中文](https://github.com/cgy6666/luogu-mc-cj/blob/main/README/Chinese.md)
 
 <h1 align="center">Luogu MC Achievements</h1>
 <p align="center">Lightweight user script for Luogu — pop up Minecraft-style achievement toasts when you get AC.</p>
