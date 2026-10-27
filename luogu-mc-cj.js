@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         洛谷 AC → MC 成就图片
+// @name         洛谷 MC 成就图片
 // @namespace    https://www.luogu.com.cn/
 // @version      1.1
 // @author       cgy20140502&cyx20131003
