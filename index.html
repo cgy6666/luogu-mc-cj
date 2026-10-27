@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>洛谷 MC 成就 - 极速安装</title>
+    <style>
+        :root {
+            --bg-color: #f6f8fa;
+            --card-bg: #ffffff;
+            --text-color: #24292f;
+            --text-light: #656d76;
+            --border-color: #d0d7de;
+            --primary-color: #0969da;
+            --success-color: #1a7f37;
+            --success-bg: #dafbe1;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #0d1117;
+                --card-bg: #161b22;
+                --text-color: #e6edf3;
+                --text-light: #8b949e;
+                --border-color: #30363d;
+                --primary-color: #58a6ff;
+                --success-color: #3fb950;
+                --success-bg: #238636;
+            }
+        }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        h1 { margin-top: 0; font-size: 24px; text-align: center; }
+        p.subtitle { text-align: center; color: var(--text-light); margin-bottom: 24px; font-size: 14px; }
+        .btn-group { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+        button.primary { background: var(--primary-color); color: #fff; }
+        button.primary:hover { opacity: 0.9; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        th { color: var(--text-light); font-weight: 600; }
+        tr.fastest { background: var(--success-bg); }
+        tr.fastest td { color: var(--success-color); font-weight: bold; }
+        .time { font-family: monospace; font-size: 15px; }
+        .status { font-size: 12px; padding: 2px 8px; border-radius: 12px; background: var(--border-color); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>洛谷 MC 成就</h1>
+    <p class="subtitle">自动测速，为你优选最快的 CDN 节点安装脚本</p>
+    
+    <div class="btn-group">
+        <button id="testBtn" class="primary" onclick="startTest()">开始测速</button>
+        <button id="installBtn" class="primary" onclick="installFastest()" disabled>安装最快源</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>CDN 节点</th>
+                <th>响应时间</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="resultBody">
+            <tr><td colspan="4" style="text-align:center;color:var(--text-light)">点击上方按钮开始测速</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // ================= 配置区 =================
+    // 在这里填入你的 GitHub 用户名、仓库名、分支和文件名
+    const REPO = 'cgy6666/luogu-mc-cj'; 
+    const BRANCH = 'main';
+    const FILENAME = 'luogu-mc-cj.user.js';
+    // ==========================================
+
+    // 定义测速的 CDN 源
+    const CDN_SOURCES = [
+        { name: 'jsDelivr (Fastly)', base: `https://fastly.jsdelivr.net/gh/${REPO}@${BRANCH}` },
+        { name: 'jsDelivr (GCore)', base: `https://gcore.jsdelivr.net/gh/${REPO}@${BRANCH}` },
+        { name: 'jsDelivr (主)', base: `https://cdn.jsdelivr.net/gh/${REPO}@${BRANCH}` },
+        { name: 'jsdmirror.cn', base: `https://cdn.jsdmirror.cn/gh/${REPO}@${BRANCH}` },
+        { name: 'GitHub Raw', base: `https://raw.githubusercontent.com/${REPO}/${BRANCH}` }
+    ];
+
+    let results = [];
+    let fastestUrl = '';
+
+    // 测速核心逻辑
+    async function testNode(source) {
+        const url = `${source.base}/${FILENAME}`;
+        const start = performance.now();
+        
+        try {
+            // 加上时间戳防止 CDN 缓存导致测速不准
+            const res = await fetch(`${url}?t=${Date.now()}`, { method: 'HEAD', cache: 'no-cache' });
+            const duration = Math.round(performance.now() - start);
+            return { ...source, url, duration, ok: res.ok };
+        } catch (err) {
+            return { ...source, url, duration: 9999, ok: false };
+        }
+    }
+
+    async function startTest() {
+        const btn = document.getElementById('testBtn');
+        const tbody = document.getElementById('resultBody');
+        const installBtn = document.getElementById('installBtn');
+
+        btn.disabled = true;
+        btn.innerText = '测速中...';
+        installBtn.disabled = true;
+        results = [];
+        tbody.innerHTML = '';
+
+        // 并发测速
+        const promises = CDN_SOURCES.map(src => testNode(src));
+        const data = await Promise.all(promises);
+
+        // 找出最快的可用节点
+        const available = data.filter(d => d.ok).sort((a, b) => a.duration - b.duration);
+        
+        if (available.length > 0) {
+            fastestUrl = available[0].url;
+            installBtn.disabled = false;
+        }
+
+        // 渲染表格
+        data.forEach(item => {
+            const isFastest = fastestUrl === item.url;
+            const tr = document.createElement('tr');
+            if (isFastest) tr.className = 'fastest';
+
+            tr.innerHTML = `
+                <td>${item.name}</td>
+                <td class="time">${item.ok ? item.duration + ' ms' : '超时'}</td>
+                <td><span class="status">${item.ok ? (isFastest ? '最快' : '就绪') : '失败'}</span></td>
+                <td>
+                    <button class="primary" style="padding:4px 12px;font-size:12px" 
+                        onclick="window.open('${item.url}', '_blank')" ${item.ok ? '' : 'disabled'}>
+                        安装
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        btn.disabled = false;
+        btn.innerText = '重新测速';
+    }
+
+    // 一键安装最快源
+    function installFastest() {
+        if (fastestUrl) {
+            // 使用 Tampermonkey 官方接口强制唤起安装
+            const tmUrl = `https://www.tampermonkey.net/script_installation.php?url=${encodeURIComponent(fastestUrl)}`;
+            window.open(tmUrl, '_blank');
+        }
+    }
+</script>
+
+</body>
+</html>
