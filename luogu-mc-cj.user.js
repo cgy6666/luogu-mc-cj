@@ -8,6 +8,7 @@
 // @match        https://www.luogu.com.cn/*
 // @grant        none
 // @run-at       document-start
+// @license      MIT
 // ==/UserScript==
 
 (function () {
