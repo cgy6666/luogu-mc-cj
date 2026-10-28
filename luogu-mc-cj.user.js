@@ -2,6 +2,7 @@
 // @name         洛谷 MC 成就图片
 // @namespace    https://www.luogu.com.cn/
 // @version      1.1
+// @icon         https://cdn.xqyhcc.qzz.io/img/luogumc.png
 // @author       cgy20140502&cyx20131003
 // @description  AC 就出现 MC 成就
 // @match        https://www.luogu.com.cn/*
