@@ -10,8 +10,17 @@ Language: [English](https://github.com/cgy6666/luogu-mc-cj/blob/main/README.md) 
   <a href="https://github.com/cgy6666/luogu-mc-cj">
     <img src="https://img.shields.io/github/languages/code-size/cgy6666/luogu-mc-cj" alt="GitHub code size" />
   </a>
+  <a href="https://github.com/cgy6666/luogu-mc-cj/issues">
+    <img src="https://img.shields.io/github/issues/cgy6666/luogu-mc-cj" alt="GitHub issues" />
+  </a>
+  <a href="https://github.com/cgy6666/luogu-mc-cj/pulls">
+    <img src="https://img.shields.io/github/issues-pr/cgy6666/luogu-mc-cj" alt="GitHub pull requests" />
+  </a>
   <a href="https://github.com/cgy6666/luogu-mc-cj/stargazers">
     <img src="https://img.shields.io/github/stars/cgy6666/luogu-mc-cj" alt="GitHub stars" />
+  </a>
+  <a href="https://github.com/cgy6666/luogu-mc-cj/forks">
+    <img src="https://img.shields.io/github/forks/cgy6666/luogu-mc-cj" alt="GitHub forks" />
   </a>
 </p>
 
