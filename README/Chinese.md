@@ -58,7 +58,7 @@ Language: [English](https://github.com/cgy6666/luogu-mc-cj/blob/main/README.md) 
 ## 贡献与反馈
 
 - 欢迎提交 Issue 和 Pull Request 反馈问题，或提出新的成就建议。
-- 开发者：[cgy20140502](https://www.luogu.com.cn/user/1215733) & [cyx_20131003](https://www.luogu.com.cn/user/1215733)。
+- 开发者：[cgy20140502](https://www.luogu.com.cn/user/1048914) & [cyx_20131003](https://www.luogu.com.cn/user/1215733)。
 - 本脚本及文档在开发过程中使用了 **DeepSeek** 辅助编写。
 
 ## 开源协议
